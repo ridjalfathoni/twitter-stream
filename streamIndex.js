@@ -24,23 +24,13 @@
 
 const needle = require('needle');
 require('dotenv').config();
-const userId = '1008329402315202561';
-// const userId = '1636325363897827332';
+const fs = require('fs');
 
-// const streamURL = `https://api.twitter.com/2/users/${userId}/tweets?tweet.fields=created_at&expansions=author_id&user.fields=created_at&max_results=10`;
 const streamURL = `https://api.twitter.com/2/tweets/search/stream?tweet.fields=entities,created_at,public_metrics&expansions=author_id`;
 const options = {
     headers: {
         'Authorization': `Bearer ${process.env.BEARER_TOKEN}`
-    },
-    // data: {
-    //     add: [
-    //         {
-    //             value: "from:gataungapainn"
-    //         }
-    //     ]
-    // },
-    // response_timeout: 0
+    }
 };
 
 // const stream = needle.get(streamURL, options);
@@ -50,11 +40,8 @@ const stream = needle.get(streamURL, {
     }
 })
 
-// const tweetURL = 'https://api.twitter.com/2/users/:id/retweets'
-// const kadekwardaya = "1461382705946398721";\
-
 const listAddress = {
-    
+   
 }
 
 async function doRetweet(user_id, tweet_id, access_token) {
@@ -107,8 +94,8 @@ async function doComment(tweet_id, access_token, address) {
                 'Content-Type': 'application/json'
             }
         }).then(function (res) {
-            console.log("comment headers",res?.headers)
-            console.log("comment body",res?.body)
+            console.log("comment headers", res?.headers)
+            console.log("comment body", res?.body)
         }).catch(function (err) {
             console.log('comment error', err)
         });
@@ -117,19 +104,26 @@ async function doComment(tweet_id, access_token, address) {
 
 stream.on('data', async (data) => {
     try {
-        const authData = require('./authData.json');
+        let authData;
+        const datas = await new Promise((resolve, reject) => {
+            fs.readFile('./authData.json', 'utf8', (err, datas) => {
+                if (err) reject(err);
+                resolve(datas);
+            });
+        });
+        authData = JSON.parse(datas);
         const json = JSON.parse(data);
         const { id } = json.data;
-        
+
         authData.data.forEach((el, i) => {
-            let userTweet = listAddress[el.username]
+            let userTweet = listAddress[el.username];
             if (userTweet) {
                 doRetweet(el.id, id, el.access_token);
                 doLike(el.id, id, el.access_token);
                 doComment(id, el.access_token, userTweet);
             }
         })
-        
+
         console.log(json);
     } catch (error) {
         if (data.status === 401) {
