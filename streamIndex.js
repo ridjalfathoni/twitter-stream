@@ -115,14 +115,25 @@ stream.on('data', async (data) => {
         const json = JSON.parse(data);
         const { id } = json.data;
 
-        authData.data.forEach((el, i) => {
+        // authData.data.forEach((el, i) => {
+        //     let userTweet = listAddress[el.username];
+        //     if (userTweet) {
+        //         doRetweet(el.id, id, el.access_token);
+        //         doLike(el.id, id, el.access_token);
+        //         doComment(id, el.access_token, userTweet);
+        //     }
+        // })
+
+        const promises = authData.data.map(async (el, i) => {
             let userTweet = listAddress[el.username];
             if (userTweet) {
-                doRetweet(el.id, id, el.access_token);
-                doLike(el.id, id, el.access_token);
-                doComment(id, el.access_token, userTweet);
+                await doRetweet(el.id, id, el.access_token);
+                await doLike(el.id, id, el.access_token);
+                await doComment(id, el.access_token, userTweet);
             }
-        })
+        });
+
+        await Promise.all(promises);
 
         console.log(json);
     } catch (error) {
