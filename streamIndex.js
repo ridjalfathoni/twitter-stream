@@ -40,9 +40,6 @@ const stream = needle.get(streamURL, {
     }
 })
 
-const listAddress = {
-   
-}
 
 async function doRetweet(user_id, tweet_id, access_token) {
     await needle('post', `https://api.twitter.com/2/users/${user_id}/retweets`,
@@ -105,12 +102,20 @@ async function doComment(tweet_id, access_token, address) {
 stream.on('data', async (data) => {
     try {
         let authData;
+        let listAddress;
         const datas = await new Promise((resolve, reject) => {
             fs.readFile('./authData.json', 'utf8', (err, datas) => {
                 if (err) reject(err);
                 resolve(datas);
             });
         });
+        const addressDatas = await new Promise((resolve, reject) => {
+            fs.readFile('./listAddress.json', 'utf8', (err, datas) => {
+                if (err) reject(err);
+                resolve(datas);
+            });
+        });
+        listAddress = addressDatas;
         authData = JSON.parse(datas);
         const json = JSON.parse(data);
         const { id } = json.data;
