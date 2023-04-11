@@ -87,7 +87,7 @@ app.use('/twitterAuth', async (req, res, next) => {
             }
             console.log('Data written to file');
         });
-        res.json(response.data);
+        res.send("ok");
     } catch (error) {
         console.error('Error:', error.message);
         next(error);
